@@ -1,16 +1,19 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import MaintenanceTable from '../components/MaintenanceTable.vue';
 import MaintenanceForm from '../components/MaintenanceForm.vue';
 import { useMaintenanceStore } from '../store/maintenanceStore';
 
 const store = useMaintenanceStore();
+const router = useRouter(); 
 const showForm = ref(false);
 
 // Estado para os filtros
 const filtros = ref({
   maquina: '',
   status: '',
+  dataFiltro: '', // NOVO: Campo para filtro de data (RF05)
 });
 
 onMounted(() => {
@@ -23,8 +26,12 @@ onMounted(() => {
 const manutençõesFiltradas = computed(() => {
   return store.manutencoes.filter(m => {
     const maquinaMatch = m.maquina.toLowerCase().includes(filtros.value.maquina.toLowerCase());
-    const statusMatch = m.status.toLowerCase().includes(filtros.value.status.toLowerCase());
-    return maquinaMatch && statusMatch;
+    const statusMatch = filtros.value.status === '' || m.status.toLowerCase() === filtros.value.status.toLowerCase();
+    
+    // Lógica para filtro de data (compara se a data da manutenção é igual ao filtro)
+    const dataMatch = filtros.value.dataFiltro === '' || m.data === filtros.value.dataFiltro;
+
+    return maquinaMatch && statusMatch && dataMatch; // Combine todos os filtros
   });
 });
 
@@ -36,6 +43,11 @@ async function handleAddManutencao(formData) {
   } catch (error) {
     console.error(error);
   }
+}
+
+// Função para navegar para a página de detalhes (RF06)
+function goToDetails(id) {
+    router.push(`/lista/${id}`);
 }
 </script>
 
@@ -56,20 +68,24 @@ async function handleAddManutencao(formData) {
     <div class="mb-6 bg-white p-4 rounded-lg shadow-md flex space-x-4">
         <div class="flex-1">
             <label for="filtro-maquina" class="block text-sm font-medium text-gray-700">Filtrar por Máquina</label>
-            <input v-model="filtros.maquina" type="text" id="filtro-maquina" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+            <input v-model="filtros.maquina" type="text" id="filtro-maquina" class="mt-1 block w-full shadow-sm h-10 px-3 py-2 border-gray-300 rounded-md">
         </div>
         <div class="flex-1">
             <label for="filtro-status" class="block text-sm font-medium text-gray-700">Filtrar por Status</label>
-            <select v-model="filtros.status" id="filtro-status" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <select v-model="filtros.status" id="filtro-status" class="mt-1 block w-full h-10 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Todos</option>
                 <option value="Concluída">Concluída</option>
                 <option value="Pendente">Pendente</option>
                 <option value="Atrasada">Atrasada</option>
             </select>
         </div>
+        <div class="flex-1">
+            <label for="filtro-data" class="block text-sm font-medium text-gray-700">Filtrar por Data</label>
+            <input v-model="filtros.dataFiltro" type="date" id="filtro-data" class="mt-1 block w-full shadow-sm h-10 px-3 py-2 border-gray-300 rounded-md">
+        </div>
     </div>
 
     <div v-if="store.isLoading" class="text-center">Carregando...</div>
-    <MaintenanceTable v-else :manutencoes="manutençõesFiltradas" />
+    <MaintenanceTable v-else :manutencoes="manutençõesFiltradas" @view-edit="goToDetails" />
   </div>
 </template>

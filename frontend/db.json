@@ -1,21 +1,21 @@
 {
   "machines": [
     {
-      "id": 1,
+      "id": "1",
       "maquina": "Torno CNC-A",
       "data": "2025-10-20",
       "tecnico": "Carlos Silva",
       "status": "Concluída"
     },
     {
-      "id": 2,
+      "id": "2",
       "maquina": "Prensa Hidráulica",
       "data": "2025-10-15",
       "tecnico": "Maria Oliveira",
       "status": "Atrasada"
     },
     {
-      "id": 3,
+      "id": "3",
       "maquina": "Injetora Plástica",
       "data": "2025-10-25",
       "tecnico": "João Pereira",

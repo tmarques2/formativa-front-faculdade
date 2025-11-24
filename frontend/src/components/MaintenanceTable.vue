@@ -3,6 +3,8 @@ defineProps({
   manutencoes: Array,
 });
 
+const emit = defineEmits(['viewEdit']);
+
 const getStatusClass = (status) => {
   switch (status.toLowerCase()) {
     case 'concluída':
@@ -14,6 +16,20 @@ const getStatusClass = (status) => {
     default:
       return 'bg-gray-100 text-gray-800';
   }
+};
+
+// Função para formatar a data de YYYY-MM-DD para DD/MM/YYYY
+const formatDate = (isoDate) => {
+  if (!isoDate) return '';
+  
+  const parts = isoDate.split('-');
+  
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+  
+  return isoDate; 
 };
 </script>
 
@@ -34,14 +50,20 @@ const getStatusClass = (status) => {
         <tr v-for="manutencao in manutencoes" :key="manutencao.id">
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ manutencao.id }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ manutencao.maquina }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ manutencao.data }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(manutencao.data) }}</td>
           <td class="px-6 py-4 whitespace-nowrap">
             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="getStatusClass(manutencao.status)">
               {{ manutencao.status }}
             </span>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <a href="#" class="text-indigo-600 hover:text-indigo-900">Ver / Editar</a>
+            <button 
+                @click="emit('viewEdit', manutencao.id)" 
+                class="text-indigo-600 hover:text-indigo-900 font-medium focus:outline-none 
+                       px-3 py-1 rounded-md hover:bg-indigo-50 transition-colors"
+            >
+                Ver / Editar
+            </button>
           </td>
         </tr>
       </tbody>

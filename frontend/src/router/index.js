@@ -16,6 +16,12 @@ const routes = [
     path: '/lista',
     name: 'ListaManutencoes',
     component: () => import('../views/MaintenanceListView.vue')
+  },
+  {
+    path: '/lista/:id',
+    name: 'DetalhesManutencao',
+    component: () => import('../views/MaintenanceDetailView.vue'),
+    props: true // Permite que o ID seja passado como prop ou via useRoute()
   }
 ];
 

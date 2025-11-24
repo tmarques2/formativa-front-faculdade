@@ -11,25 +11,30 @@ const attributes = computed(() => {
   }
   
   return props.manutencoes.map(m => {
-    const color = getStatusColor(m.status);
-    return {
-      key: m.id,
-      dates: new Date(m.data),
-      highlight: {
-        color: color,
-        fillMode: 'light',
-        // Deixa o highlight com cantos levemente arredondados
-        style: { 
-          borderRadius: '6px',
+      const color = getStatusColor(m.status);
+      
+      // CORREÇÃO DE DATA: Garantir que a string de data tenha o fuso horário correto (UTC) para evitar problemas de fuso horário, 
+      // embora new Date(m.data) seja o padrão.
+      const dateString = m.data ? `${m.data}T00:00:00` : new Date();
+
+      return {
+        key: m.id,
+        // CONVERSÃO DE DATA: Usar a string com o tempo para evitar o fuso horário local
+        dates: new Date(dateString), 
+        highlight: {
+          color: color,
+          fillMode: 'light',
+          style: { 
+            borderRadius: '6px',
+          },
         },
-      },
-      popover: {
-        label: `${m.maquina} (${m.status})`,
-        visibility: 'hover',
-      },
-    };
+        popover: {
+          label: `${m.maquina} (${m.status})`,
+          visibility: 'hover',
+        },
+      };
+    });
   });
-});
 
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {

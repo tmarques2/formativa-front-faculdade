@@ -1,4 +1,3 @@
-// src/store/maintenanceStore.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import api from '../services/api'; 
@@ -40,9 +39,9 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
         return isNaN(currentId) ? max : Math.max(max, currentId);
       }, 0);
 
-      // 2. Atribui o próximo ID sequencial
+      // 2. Atribui o próximo ID sequencial como STRING para consistência
       const nextId = maxId + 1;
-      const manutencaoComId = { id: nextId, ...novaManutencao };
+      const manutencaoComId = { id: String(nextId), ...novaManutencao };
       
       // 3. Envia o objeto COMPLETO (com o novo ID) para o json-server
       const response = await api.addManutencao(manutencaoComId);
@@ -57,15 +56,23 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
 
   async function updateManutencao(manutencaoAtualizada) {
     try {
-      // 1. CHAMA A API: Envia a requisição PUT/PATCH para o json-server
-      // Você pode trocar para api.updateManutencao(manutencaoAtualizada) se implementar essa função no api.js
+      // CORREÇÃO CRÍTICA: Garante que o ID no objeto enviado para a API é uma string.
+      const dataToPut = {
+        ...manutencaoAtualizada,
+        id: String(manutencaoAtualizada.id) 
+      };
+
+      // 1. CHAMA A API: Envia a requisição PUT (o api.js já lida com a URL)
+      const response = await api.updateManutencao(dataToPut);
+      const updatedData = response.data;
       
       // 2. Atualizar o estado local
-      const index = manutencoes.value.findIndex(m => m.id === manutencaoAtualizada.id);
+      const index = manutencoes.value.findIndex(m => String(m.id) === String(updatedData.id));
       if (index !== -1) {
-        manutencoes.value[index] = manutencaoAtualizada;
+        // Atualiza a store com o dado retornado pelo servidor
+        manutencoes.value[index] = updatedData;
       }
-      return manutencaoAtualizada;
+      return updatedData;
     } catch (error) {
       console.error('Erro ao atualizar manutenção:', error);
       throw error;
@@ -74,12 +81,12 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
 
   async function deleteManutencao(id) {
     try {
-      // 1. CHAMA A API: Envia a requisição DELETE para o json-server (Corrigido!)
+      // 1. CHAMA A API: Envia a requisição DELETE para o json-server
       await api.deleteManutencao(id);
 
       // 2. Atualiza o estado local APENAS se a API retornar sucesso
       const initialLength = manutencoes.value.length;
-      manutencoes.value = manutencoes.value.filter(m => m.id !== id);
+      manutencoes.value = manutencoes.value.filter(m => String(m.id) !== String(id));
       
       if (manutencoes.value.length === initialLength) {
         throw new Error(`Manutenção com ID ${id} não encontrada para exclusão local.`);

@@ -12,14 +12,14 @@
       "maquina": "Prensa Hidráulica",
       "data": "2025-10-15",
       "tecnico": "Maria Oliveira",
-      "status": "Atrasada"
+      "status": "Concluída"
     },
     {
       "id": "3",
       "maquina": "Injetora Plástica",
       "data": "2025-10-25",
       "tecnico": "João Pereira",
-      "status": "Pendente"
+      "status": "Concluída"
     }
   ]
 }

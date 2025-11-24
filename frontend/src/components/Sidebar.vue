@@ -4,7 +4,7 @@ import { ChartBarIcon, CalendarIcon, ListBulletIcon } from '@heroicons/vue/24/so
 
 <template>
   <aside class="w-64 min-h-screen bg-gray-800 text-white p-4">
-    <h1 class="text-2xl font-bold mb-8">SMPM</h1>
+    <h1 class="text-2xl font-bold mb-8">ProSys</h1>
     <nav class="flex flex-col space-y-2">
       <router-link
         to="/"

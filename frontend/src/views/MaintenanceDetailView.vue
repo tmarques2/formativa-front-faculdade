@@ -16,7 +16,8 @@ onMounted(async () => {
         await store.fetchManutencoes();
     }
     
-    const found = store.manutencoes.find(m => m.id == maintenanceId.value);
+    // CORREÇÃO DE BUSCA ROBUSTA: Garante que comparações sejam feitas entre strings
+    const found = store.manutencoes.find(m => String(m.id) === maintenanceId.value);
     
     if (found) {
         maintenance.value = { ...found }; 
@@ -44,11 +45,12 @@ async function handleDelete() {
 
     if (confirmDelete) {
         try {
-            await store.deleteManutencao(maintenance.value.id);
+            // Garante que o ID enviado para o delete seja uma string válida (ex: "4")
+            await store.deleteManutencao(String(maintenance.value.id));
             router.push('/lista');
         } catch (error) {
             console.error('Falha ao excluir a manutenção:', error);
-            alert('Erro ao excluir a manutenção. Verifique o console.');
+            alert(`Erro ao excluir a manutenção. Detalhe: ${error.message}`);
         }
     }
 }

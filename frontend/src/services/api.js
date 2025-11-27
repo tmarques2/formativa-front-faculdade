@@ -1,28 +1,30 @@
-// src/services/api.js
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:3000', 
+  baseURL: 'http://localhost:4000/api', 
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export default {
-  getManutencoes() {
-    return apiClient.get('/machines'); 
-  },
-  addManutencao(manutencao) {
-    return apiClient.post('/machines', manutencao);
-  },
-  // ATIVADO: Função para atualizar (PUT) no servidor
-  updateManutencao(manutencaoAtualizada) {
-    // Envia o objeto completo para o endpoint específico do ID.
-    // Exemplo: PUT http://localhost:3000/machines/1
-    return apiClient.put(`/machines/${manutencaoAtualizada.id}`, manutencaoAtualizada);
-  },
-  deleteManutencao(id) {
-    // Exemplo: DELETE http://localhost:3000/machines/1
-    return apiClient.delete(`/machines/${id}`);
-  },
+  // --- Manutenções ---
+  getManutencoes() { return apiClient.get('/manutencao'); },
+  addManutencao(dados) { return apiClient.post('/manutencao', dados); },
+  updateManutencao(dados) { return apiClient.put(`/manutencao/${dados.id}`, dados); },
+  deleteManutencao(id) { return apiClient.delete(`/manutencao/${id}`); },
+
+  // --- Máquinas ---
+  getMaquinas() { return apiClient.get('/maquina'); },
+  createMaquina(maquina) { return apiClient.post('/maquina', maquina); },
+  // NOVOS MÉTODOS
+  updateMaquina(maquina) { return apiClient.put(`/maquina/${maquina.id}`, maquina); },
+  deleteMaquina(id) { return apiClient.delete(`/maquina/${id}`); },
+
+  // --- Técnicos ---
+  getTecnicos() { return apiClient.get('/tecnico'); },
+  createTecnico(tecnico) { return apiClient.post('/tecnico', tecnico); },
+  // NOVOS MÉTODOS
+  updateTecnico(tecnico) { return apiClient.put(`/tecnico/${tecnico.id}`, tecnico); },
+  deleteTecnico(id) { return apiClient.delete(`/tecnico/${id}`); }
 };

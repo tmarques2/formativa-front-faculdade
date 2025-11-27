@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const Maquina = require("../models/Maquina");
+const Tecnico = require("../models/Tecnico");
 
-// LISTAR TODAS (GET)
+// LISTAR TODOS (GET)
 router.get("/", async (req, res) => {
   try {
-    const maquinas = await Maquina.find();
-    res.json(maquinas);
+    const tecnicos = await Tecnico.find();
+    res.json(tecnicos);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -15,8 +15,8 @@ router.get("/", async (req, res) => {
 // CRIAR (POST)
 router.post("/", async (req, res) => {
   try {
-    const nova = await Maquina.create(req.body);
-    res.status(201).json(nova);
+    const novo = await Tecnico.create(req.body);
+    res.status(201).json(novo);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -25,9 +25,9 @@ router.post("/", async (req, res) => {
 // ATUALIZAR (PUT)
 router.put("/:id", async (req, res) => {
   try {
-    const atualizada = await Maquina.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!atualizada) return res.status(404).json({ mensagem: "Máquina não encontrada" });
-    res.json(atualizada);
+    const atualizado = await Tecnico.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!atualizado) return res.status(404).json({ mensagem: "Técnico não encontrado" });
+    res.json(atualizado);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -36,9 +36,9 @@ router.put("/:id", async (req, res) => {
 // DELETAR (DELETE)
 router.delete("/:id", async (req, res) => {
   try {
-    const deletada = await Maquina.findByIdAndDelete(req.params.id);
-    if (!deletada) return res.status(404).json({ mensagem: "Máquina não encontrada" });
-    res.json({ mensagem: "Máquina deletada com sucesso" });
+    const deletado = await Tecnico.findByIdAndDelete(req.params.id);
+    if (!deletado) return res.status(404).json({ mensagem: "Técnico não encontrado" });
+    res.json({ mensagem: "Técnico deletado com sucesso" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

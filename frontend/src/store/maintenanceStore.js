@@ -5,6 +5,8 @@ import api from '../services/api';
 export const useMaintenanceStore = defineStore('maintenance', () => {
   // === STATE ===
   const manutencoes = ref([]);
+  const opcoesMaquinas = ref([]);
+  const opcoesTecnicos = ref([]);
   const isLoading = ref(false);
 
   // === GETTERS ===
@@ -19,6 +21,8 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
   });
 
   // === ACTIONS ===
+
+  // --- MANUTENÇÕES ---
   async function fetchManutencoes() {
     isLoading.value = true;
     try {
@@ -33,21 +37,8 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
 
   async function addManutencao(novaManutencao) {
     try {
-      // 1. Encontra o maior ID numérico existente para garantir a sequência (1, 2, 3...)
-      const maxId = manutencoes.value.reduce((max, m) => {
-        const currentId = Number(m.id);
-        return isNaN(currentId) ? max : Math.max(max, currentId);
-      }, 0);
-
-      // 2. Atribui o próximo ID sequencial como STRING para consistência
-      const nextId = maxId + 1;
-      const manutencaoComId = { id: String(nextId), ...novaManutencao };
-      
-      // 3. Envia o objeto COMPLETO (com o novo ID) para o json-server
-      const response = await api.addManutencao(manutencaoComId);
-      
+      const response = await api.addManutencao(novaManutencao);
       manutencoes.value.push(response.data);
-      
     } catch (error) {
       console.error('Erro ao adicionar manutenção:', error);
       throw error;
@@ -56,23 +47,11 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
 
   async function updateManutencao(manutencaoAtualizada) {
     try {
-      // CORREÇÃO CRÍTICA: Garante que o ID no objeto enviado para a API é uma string.
-      const dataToPut = {
-        ...manutencaoAtualizada,
-        id: String(manutencaoAtualizada.id) 
-      };
-
-      // 1. CHAMA A API: Envia a requisição PUT (o api.js já lida com a URL)
-      const response = await api.updateManutencao(dataToPut);
-      const updatedData = response.data;
-      
-      // 2. Atualizar o estado local
-      const index = manutencoes.value.findIndex(m => String(m.id) === String(updatedData.id));
+      const response = await api.updateManutencao(manutencaoAtualizada);
+      const index = manutencoes.value.findIndex(m => m.id === response.data.id);
       if (index !== -1) {
-        // Atualiza a store com o dado retornado pelo servidor
-        manutencoes.value[index] = updatedData;
+        manutencoes.value[index] = response.data;
       }
-      return updatedData;
     } catch (error) {
       console.error('Erro ao atualizar manutenção:', error);
       throw error;
@@ -81,25 +60,100 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
 
   async function deleteManutencao(id) {
     try {
-      // 1. CHAMA A API: Envia a requisição DELETE para o json-server
       await api.deleteManutencao(id);
-
-      // 2. Atualiza o estado local APENAS se a API retornar sucesso
-      const initialLength = manutencoes.value.length;
-      manutencoes.value = manutencoes.value.filter(m => String(m.id) !== String(id));
-      
-      if (manutencoes.value.length === initialLength) {
-        throw new Error(`Manutenção com ID ${id} não encontrada para exclusão local.`);
-      }
-
+      manutencoes.value = manutencoes.value.filter(m => m.id !== id);
     } catch (error) {
       console.error('Erro ao excluir manutenção:', error);
       throw error;
     }
   }
 
+  // --- OPÇÕES (MÁQUINAS E TÉCNICOS) ---
+  
+  async function fetchOpcoes() {
+    try {
+      const [resMq, resTec] = await Promise.all([
+        api.getMaquinas(),
+        api.getTecnicos()
+      ]);
+      opcoesMaquinas.value = resMq.data;
+      opcoesTecnicos.value = resTec.data;
+    } catch (error) {
+      console.error("Erro ao buscar opções:", error);
+    }
+  }
+
+  // --- ACTIONS DE MÁQUINAS ---
+  async function saveMaquina(novaMaquina) {
+    // Se tiver ID, é edição (PUT)
+    if (novaMaquina.id) {
+        try {
+            const response = await api.updateMaquina(novaMaquina);
+            const index = opcoesMaquinas.value.findIndex(m => m.id === novaMaquina.id);
+            if (index !== -1) opcoesMaquinas.value[index] = response.data;
+        } catch (error) { console.error(error); throw error; }
+    } else {
+        // Se não tiver ID, é criação (POST)
+        try {
+            const response = await api.createMaquina(novaMaquina);
+            opcoesMaquinas.value.push(response.data);
+        } catch (error) { console.error(error); throw error; }
+    }
+  }
+
+  async function removeMaquina(id) {
+    try {
+        await api.deleteMaquina(id);
+        // Se deu certo, remove da lista
+        opcoesMaquinas.value = opcoesMaquinas.value.filter(m => m.id !== id);
+    } catch (error) { 
+        // SE O ERRO FOR 404 (Não encontrado), REMOVE DA LISTA MESMO ASSIM
+        if (error.response && error.response.status === 404) {
+            console.warn(`Máquina ${id} não encontrada no banco, removendo da lista local.`);
+            opcoesMaquinas.value = opcoesMaquinas.value.filter(m => m.id !== id);
+        } else {
+            // Se for outro erro (ex: servidor caiu), mantém o erro
+            console.error(error); 
+            throw error; 
+        }
+    }
+  }
+
+  // --- ACTIONS DE TÉCNICOS ---
+  async function saveTecnico(novoTecnico) {
+    if (novoTecnico.id) {
+        try {
+            const response = await api.updateTecnico(novoTecnico);
+            const index = opcoesTecnicos.value.findIndex(t => t.id === novoTecnico.id);
+            if (index !== -1) opcoesTecnicos.value[index] = response.data;
+        } catch (error) { console.error(error); throw error; }
+    } else {
+        try {
+            const response = await api.createTecnico(novoTecnico);
+            opcoesTecnicos.value.push(response.data);
+        } catch (error) { console.error(error); throw error; }
+    }
+  }
+
+  async function removeTecnico(id) {
+    try {
+        await api.deleteTecnico(id);
+        opcoesTecnicos.value = opcoesTecnicos.value.filter(t => t.id !== id);
+    } catch (error) { 
+        if (error.response && error.response.status === 404) {
+            console.warn(`Técnico ${id} não encontrado no banco, removendo da lista local.`);
+            opcoesTecnicos.value = opcoesTecnicos.value.filter(t => t.id !== id);
+        } else {
+            console.error(error); 
+            throw error; 
+        }
+    }
+  }
+
   return {
     manutencoes,
+    opcoesMaquinas,
+    opcoesTecnicos,
     isLoading,
     totalManutencoes,
     kpis,
@@ -107,5 +161,10 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
     addManutencao,
     updateManutencao,
     deleteManutencao,
+    fetchOpcoes,
+    saveMaquina,
+    removeMaquina,
+    saveTecnico,
+    removeTecnico
   };
 });

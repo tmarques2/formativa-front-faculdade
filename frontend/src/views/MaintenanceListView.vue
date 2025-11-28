@@ -25,13 +25,16 @@ onMounted(() => {
 // Lista de manutenções filtrada
 const manutençõesFiltradas = computed(() => {
   return store.manutencoes.filter(m => {
-    const maquinaMatch = m.maquina.toLowerCase().includes(filtros.value.maquina.toLowerCase());
-    const statusMatch = filtros.value.status === '' || m.status.toLowerCase() === filtros.value.status.toLowerCase();
     
-    // Lógica para filtro de data (compara se a data da manutenção é igual ao filtro)
+    // CORREÇÃO AQUI: 
+    // Verifica se m.maquina é um objeto e pega o .nome, ou usa vazio se não existir
+    const nomeMaquina = m.maquina?.nome || ''; 
+    
+    const maquinaMatch = nomeMaquina.toLowerCase().includes(filtros.value.maquina.toLowerCase());
+    const statusMatch = filtros.value.status === '' || m.status?.toLowerCase() === filtros.value.status.toLowerCase();
     const dataMatch = filtros.value.dataFiltro === '' || m.data === filtros.value.dataFiltro;
 
-    return maquinaMatch && statusMatch && dataMatch; // Combine todos os filtros
+    return maquinaMatch && statusMatch && dataMatch; 
   });
 });
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:4000/api', 
+  baseURL: 'https://formativa-front-faculdade.onrender.com', 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -24,7 +24,7 @@ export default {
   // --- Técnicos ---
   getTecnicos() { return apiClient.get('/tecnico'); },
   createTecnico(tecnico) { return apiClient.post('/tecnico', tecnico); },
-  // NOVOS MÉTODOS
+
   updateTecnico(tecnico) { return apiClient.put(`/tecnico/${tecnico.id}`, tecnico); },
   deleteTecnico(id) { return apiClient.delete(`/tecnico/${id}`); }
 };
